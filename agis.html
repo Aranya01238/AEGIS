@@ -15,6 +15,7 @@
         - Report Info: Bill of Materials breakdown -> Goal: Compare/Inform -> Viz: Bar Chart -> Interaction: Hover for tooltips -> Justification: Clearly compares the cost of different component categories, providing granular detail on the electronics budget. -> Library/Method: Chart.js.
         - Report Info: 4-Day Schedule -> Goal: Change/Organize -> Viz: Interactive Timeline/Accordion -> Interaction: Click to expand/collapse day -> Justification: Organizes a sequence of events in a compact, user-controlled format. -> Library/Method: Vanilla JS + Tailwind.
         - Report Info: Master Report -> Goal: Inform (Comprehensive) -> Viz: Long-form text with HTML formatting and tables -> Interaction: Password-protected access -> Justification: Provides a full, detailed reference document for authorized users while maintaining the primary dashboard's clean interface. -> Library/Method: HTML + Tailwind.
+        - Report Info: Virtual Rendering -> Goal: Engage/Visualize -> Viz: Image Gallery with Placeholders -> Interaction: Static display with defined areas -> Justification: Provides a dedicated visual section for the project, enhancing its professional presentation and giving users a clear idea of the final product. -> Library/Method: HTML + Tailwind.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -60,6 +61,17 @@
             justify-content: center;
             z-index: 50;
         }
+        .image-placeholder {
+            background-color: #1f2937; /* gray-800 */
+            border: 2px dashed #4b5563; /* gray-600 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #d1d5db; /* gray-300 */
+            height: 250px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -76,6 +88,7 @@
                     <li><a href="#plan" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">📅 Project Plan</a></li>
                     <li><a href="#budget" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">💰 Budget</a></li>
                     <li><a href="#master-copy" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">📜 Master Copy</a></li>
+                    <li><a href="#visual-rendering" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">🖼️ Renders</a></li>
                     <li><a href="#team-info" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">👥 Team Info</a></li>
                 </ul>
             </nav>
@@ -99,8 +112,8 @@
                         <p class="text-gray-300">An ESP32-S3 handles high-level logic and communications, while a Raspberry Pi Pico manages real-time GPS and sensor data processing for maximum efficiency.</p>
                     </div>
                     <div class="bg-gray-800 p-6 rounded-xl shadow-md border border-gray-700">
-                        <h3 class="font-bold text-xl text-cyan-400 mb-2">Multi-Layered Security</h3>
-                        <p class="text-gray-300">Combines a physical solenoid lock with PIR motion detection, remote alerts via LoRa, and a defensive high-voltage stun module for robust protection.</p>
+                        <h3 class="font-bold text-xl text-cyan-400 mb-2">Enhanced Defensive Response</h3>
+                        <p class="text-gray-300">The bot now features an electrified grill fencing around its body, which can be manually activated via remote command for an additional layer of security.</p>
                     </div>
                 </div>
 
@@ -127,7 +140,7 @@
                         <div class="flex justify-around text-center flex-wrap">
                              <div id="comp-lora" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">LoRa SX1278</div>
                              <div id="comp-solenoid" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">Solenoid Lock</div>
-                             <div id="comp-stun" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">Stun Module</div>
+                             <div id="comp-stun-grill" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">Stun/Grill Module</div>
                         </div>
                          <div class="flex justify-center my-4">
                             <div class="w-2/3 h-px bg-gray-600"></div>
@@ -187,7 +200,7 @@
                         <div class="flex-shrink-0 w-12 h-12 bg-red-600 text-white flex items-center justify-center rounded-full text-2xl font-bold mr-6">!</div>
                         <div>
                             <h3 class="text-2xl font-bold text-red-400 mb-2">Security Protocol</h3>
-                            <p class="text-gray-300">If the PIR sensor detects motion while the bot is locked, it can trigger an alert and activate the defensive stun module, either autonomously or via remote command.</p>
+                            <p class="text-gray-300">The high-voltage stun module and electrified grill fencing can now be activated by the remote user via LoRa commands, providing a powerful defensive capability.</p>
                         </div>
                     </div>
                 </div>
@@ -302,13 +315,27 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Virtual Rendering Section -->
+            <section id="visual-rendering" class="content-section">
+                <h2 class="text-4xl font-bold text-gray-100 mb-4">Virtual Renders & Visuals</h2>
+                <p class="text-lg text-gray-400 mb-8 max-w-4xl">This gallery provides a visual representation of the AEGIS Defense Bot project, including conceptual renders, component layouts, and a look at the final product. A placeholder for the new electrified grill fencing has been added.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="image-placeholder rounded-xl shadow-lg">Main Bot Render</div>
+                    <div class="image-placeholder rounded-xl shadow-lg">Component Layout</div>
+                    <div class="image-placeholder rounded-xl shadow-lg">Bot with Solenoid Lock</div>
+                    <div class="image-placeholder rounded-xl shadow-lg">Bot with Electrified Grill Fencing</div>
+                    <div class="image-placeholder rounded-xl shadow-lg">Side Profile</div>
+                    <div class="image-placeholder rounded-xl shadow-lg">Defensive System Render</div>
+                </div>
+            </section>
             
             <!-- Master Copy Section (Hidden by default) -->
             <section id="master-copy" class="content-section">
                 <h2 class="text-4xl font-bold text-gray-100 mb-4">Master Copy: AEGIS Defense Bot Project Paper</h2>
                 <div class="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
                     <h3 class="text-3xl font-bold text-cyan-400 mb-4">Abstract</h3>
-                    <p class="text-gray-300 leading-relaxed mb-8">The AEGIS Defense Bot is a proof-of-concept autonomous security rover designed to transport and secure a payload between two predefined geofenced zones. The rover utilizes a dual microcontroller architecture, combining the processing power and wireless communication capabilities of the ESP32-S3 with the real-time sensor processing of the Raspberry Pi Pico. Its core functionality revolves around a GPS-based geofencing system that automatically activates a solenoid lock upon exiting a 300-meter radius source zone and deactivates it upon entering a 200-meter radius destination zone. Equipped with LoRa communication for long-range remote control, ultrasonic and PIR sensors for obstacle and intruder detection, and a high-voltage stun module for defensive response, the AEGIS bot represents a robust, low-cost solution for localized security and autonomous delivery applications.</p>
+                    <p class="text-gray-300 leading-relaxed mb-8">The AEGIS Defense Bot is a proof-of-concept autonomous security rover designed to transport and secure a payload between two predefined geofenced zones. The rover utilizes a dual microcontroller architecture, combining the processing power and wireless communication capabilities of the ESP32-S3 with the real-time sensor processing of the Raspberry Pi Pico. Its core functionality revolves around a GPS-based geofencing system that automatically activates a solenoid lock upon exiting a 300-meter radius source zone and deactivates it upon entering a 200-meter radius destination zone. A key new feature is an electrified grill fencing surrounding the bot, which can be activated on demand by a user via remote command, using the same high-voltage power as the stun module. Equipped with LoRa communication for long-range remote control, ultrasonic and PIR sensors for obstacle and intruder detection, and a defensive response system, the AEGIS bot represents a robust, low-cost solution for localized security and autonomous delivery applications.</p>
                     
                     <h3 class="text-3xl font-bold text-cyan-400 mb-4">2. Technical Architecture and Component Breakdown</h3>
                     <p class="text-gray-300 leading-relaxed mb-4">The AEGIS bot’s architecture is built around a hybrid microcontroller system, with each board optimized for specific tasks.</p>
@@ -363,7 +390,7 @@
                         <li>**Solenoid Lock**: The mechanical lock activated by the ESP32 based on geo-boundaries.</li>
                         <li>**HC-SR04 Ultrasonic Sensors**: Used for obstacle detection.</li>
                         <li>**PIR Sensor**: Detects movement in the bot’s vicinity.</li>
-                        <li>**Defensive Stun Module**: A high-voltage output module triggered by motion or remote command.</li>
+                        <li>**Defensive Stun Module & Grill Fencing**: A high-voltage output module that can be triggered by the ESP32-S3 to activate either the stun module or the new electrified grill fencing, based on user input.</li>
                         <li>**4x 12V Gear Motors & 2x L298N Motor Drivers**: The drive system for the rover's mobility.</li>
                     </ul>
 
@@ -387,7 +414,7 @@
                         <li>**Start Phase:** Unlocked and ready within the 300m Source Area.</li>
                         <li>**Travel Phase:** Solenoid locks when outside the 300m radius; bot navigates to destination.</li>
                         <li>**Arrival Phase:** Solenoid unlocks upon entering the 200m Destination Area.</li>
-                        <li>**Additional Security:** Stun module can be activated by PIR sensor or remote command while locked.</li>
+                        <li>**Additional Security:** The stun module and the newly added electrified grill fencing can be activated by the user via remote command, providing a powerful defensive capability.</li>
                     </ul>
 
                     <h3 class="text-3xl font-bold text-cyan-400 mb-4">7. Bill of Materials and Cost Analysis</h3>
@@ -467,6 +494,10 @@
                         </tbody>
                     </table>
                 </div>
+
+                <footer class="mt-16 text-gray-400 text-sm text-center">
+                    <p class="font-bold text-gray-200">Created by Aranya Rath</p>
+                </footer>
             </section>
 
             <!-- Team Info Section -->
@@ -480,8 +511,8 @@
                             <div>
                                 <h3 class="text-2xl font-bold text-gray-100">Aranya Rath</h3>
                                 <p class="text-gray-400">Team Lead</p>
-                                <p class="text-gray-300 text-sm mt-2">Email: arjundutt01238@gmail.com</p>
-                                <p class="text-gray-300 text-sm">Phone: 8274090864</p>
+                                <p class="text-gray-300 text-sm mt-2">Email: <a href="mailto:arjundutt01238@gmail.com" class="text-cyan-400 hover:underline">arjundutt01238@gmail.com</a></p>
+                                <p class="text-gray-300 text-sm">Phone: <a href="tel:8274090864" class="text-cyan-400 hover:underline">8274090864</a></p>
                             </div>
                         </div>
                         <hr class="border-gray-700">
@@ -496,16 +527,20 @@
                         <div>
                             <h3 class="text-xl font-bold text-gray-100 mb-4">Team Members</h3>
                             <ul class="space-y-2 text-gray-300">
-                                <li><span class="font-bold">1. Priyadarshi Gupta</span> - Mathematical Model</li>
-                                <li><span class="font-bold">2. Deepjyoti Basu</span> - CAD</li>
-                                <li><span class="font-bold">3. Sayak Pal</span> - Algo Design, Frame checking</li>
-                                <li><span class="font-bold">4. Arghya Kumar</span> - CAD, Electronics</li>
-                                <li><span class="font-bold">5. Tousif Aman Halder</span> - Electronics</li>
-                                <li><span class="font-bold">6. Tomojoy</span> - Body cheting, Manual Auto testing</li>
+                                <li><strong>1. Priyadarshi Gupta</strong> - Mathematical Model</li>
+                                <li><strong>2. Deepjyoti Basu</strong> - CAD</li>
+                                <li><strong>3. Sayak Pal</strong> - Algo Design, Frame checking</li>
+                                <li><strong>4. Arghya Kumar</strong> - CAD, Electronics</li>
+                                <li><strong>5. Tousif Aman Halder</strong> - Electronics</li>
+                                <li><strong>6. Tomojoy</strong> - Body cheting, Manual Auto testing</li>
                             </ul>
                         </div>
                     </div>
                 </div>
+
+                <footer class="mt-16 text-gray-400 text-sm text-center">
+                    <p class="font-bold text-gray-200">Created by Aranya Rath</p>
+                </footer>
             </section>
         </main>
     </div>
@@ -547,6 +582,7 @@
             const masterPasswordInput = document.getElementById('master-password');
             const authSubmitBtn = document.getElementById('auth-submit-btn');
             const authMessage = document.getElementById('auth-message');
+            const visualRenderingLink = document.querySelector('a[href="#visual-rendering"]');
 
             // Navigation
             function showSection(targetId) {
@@ -606,16 +642,14 @@
                 'comp-pico': { title: 'Raspberry Pi Pico', text: 'Dedicated to low-level, real-time tasks. It processes data from the GPS module and all environmental sensors, offloading time-sensitive work from the ESP32.' },
                 'comp-lora': { title: 'LoRa SX1278', text: 'Enables long-range, low-power wireless communication for sending status updates and receiving remote override commands.' },
                 'comp-solenoid': { title: 'Solenoid Lock', text: 'The physical locking mechanism that secures the payload. It is activated and deactivated by the ESP32 based on geofencing rules.' },
-                'comp-stun': { title: 'Stun Module', text: 'A high-voltage defensive system triggered by the ESP32 in response to a PIR sensor alert or a remote command.' },
+                'comp-stun-grill': { title: 'Stun/Grill Module', text: 'A high-voltage defensive system triggered by the ESP32 in response to a PIR sensor alert or a remote command. Powers both the stun module and the new electrified grill fencing.' },
                 'comp-gps': { title: 'GPS NEO-6M', text: 'Provides real-time location data (latitude and longitude) to the Raspberry Pi Pico, which is essential for the geofencing calculations.' },
                 'comp-pir': { title: 'PIR Sensor', text: 'Detects motion in the bot’s vicinity. When triggered while the bot is locked, it initiates a security alert.' },
                 'comp-ultrasonic': { title: 'Ultrasonic Sensors', text: 'Used for close-range obstacle detection (HC-SR04), allowing the bot to navigate its environment without collisions.' },
                 'comp-motors': { title: 'Motor Drivers', text: 'Two L298N motor drivers control the four 12V gear motors, providing mobility and handling the high-current demands of the drive system.' }
             };
-
             const detailsTitle = document.getElementById('details-title');
             const detailsText = document.getElementById('details-text');
-
             Object.keys(componentData).forEach(id => {
                 document.getElementById(id).addEventListener('click', () => {
                     detailsTitle.textContent = componentData[id].title;
@@ -633,7 +667,6 @@
                         content.style.maxHeight = null;
                         icon.style.transform = 'rotate(0deg)';
                     } else {
-                        // Close other items
                         document.querySelectorAll('.timeline-item-content').forEach(item => {
                             item.style.maxHeight = null;
                             item.previousElementSibling.querySelector('span:last-child').style.transform = 'rotate(0deg)';
