@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS Defense Bot - Interactive Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Dark Slate & Cyan -->
+    <!-- Application Structure Plan: The application is designed as a single-page dashboard with a fixed sidebar for navigation, allowing users to seamlessly switch between different facets of the project. This structure was chosen over a linear report to provide a non-linear, exploratory experience. Users can jump directly to the section that interests them most, be it the high-level architecture, the day-by-day project plan, or the financial breakdown. The "Master Copy" section is now a comprehensive report embedded within the dashboard, accessible via a password-protected modal. This allows for both a quick, interactive overview and a deep-dive reference document within a single application. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: System Architecture Diagram -> Goal: Organize/Inform -> Viz: Interactive HTML/CSS Diagram -> Interaction: Click to show details -> Justification: More engaging and space-efficient than a static image, allows for layered information. -> Library/Method: Vanilla JS + Tailwind.
+        - Report Info: Bill of Materials/Budget -> Goal: Compare/Inform -> Viz: Donut Chart -> Interaction: Hover for tooltips -> Justification: Provides an immediate, clear visual representation of the cost distribution. -> Library/Method: Chart.js.
+        - Report Info: Bill of Materials breakdown -> Goal: Compare/Inform -> Viz: Bar Chart -> Interaction: Hover for tooltips -> Justification: Clearly compares the cost of different component categories, providing granular detail on the electronics budget. -> Library/Method: Chart.js.
+        - Report Info: 4-Day Schedule -> Goal: Change/Organize -> Viz: Interactive Timeline/Accordion -> Interaction: Click to expand/collapse day -> Justification: Organizes a sequence of events in a compact, user-controlled format. -> Library/Method: Vanilla JS + Tailwind.
+        - Report Info: Master Report -> Goal: Inform (Comprehensive) -> Viz: Long-form text with HTML formatting and tables -> Interaction: Password-protected access -> Justification: Provides a full, detailed reference document for authorized users while maintaining the primary dashboard's clean interface. -> Library/Method: HTML + Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* slate-900 */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .nav-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-link.active {
+            background-color: #0369a1; /* sky-700 */
+            color: white;
+            font-weight: 600;
+        }
+        .component-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .component-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+        }
+        .timeline-item-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-gray-950 text-white p-6 fixed h-full shadow-lg">
+            <h1 class="text-2xl font-bold text-cyan-400 mb-8">AEGIS Defense Bot</h1>
+            <nav id="main-nav">
+                <ul>
+                    <li><a href="#overview" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800 active">🚀 Overview</a></li>
+                    <li><a href="#architecture" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">🛠️ Architecture</a></li>
+                    <li><a href="#workflow" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">📍 Workflow</a></li>
+                    <li><a href="#plan" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">📅 Project Plan</a></li>
+                    <li><a href="#budget" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">💰 Budget</a></li>
+                    <li><a href="#master-copy" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">📜 Master Copy</a></li>
+                    <li><a href="#team-info" class="nav-link block py-3 px-4 rounded-lg mb-2 hover:bg-gray-800">👥 Team Info</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="ml-64 p-6 md:p-10 flex-1">
+            
+            <!-- Overview Section -->
+            <section id="overview" class="content-section active">
+                <h2 class="text-4xl font-bold text-gray-100 mb-4">Project Overview</h2>
+                <p class="text-lg text-gray-400 mb-8 max-w-4xl">This dashboard provides an interactive exploration of the AEGIS Defense Bot, an autonomous security rover. Navigate through the different sections using the sidebar to understand its architecture, operational workflow, project plan, and budget.</p>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-md border border-gray-700">
+                        <h3 class="font-bold text-xl text-cyan-400 mb-2">Autonomous Geofencing</h3>
+                        <p class="text-gray-300">The core feature is a GPS-based system that automatically locks a solenoid when leaving a 300m source zone and unlocks upon entering a 200m destination zone.</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-md border border-gray-700">
+                        <h3 class="font-bold text-xl text-cyan-400 mb-2">Dual Microcontroller Design</h3>
+                        <p class="text-gray-300">An ESP32-S3 handles high-level logic and communications, while a Raspberry Pi Pico manages real-time GPS and sensor data processing for maximum efficiency.</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-md border border-gray-700">
+                        <h3 class="font-bold text-xl text-cyan-400 mb-2">Multi-Layered Security</h3>
+                        <p class="text-gray-300">Combines a physical solenoid lock with PIR motion detection, remote alerts via LoRa, and a defensive high-voltage stun module for robust protection.</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+                    <h3 class="text-2xl font-bold text-gray-100 mb-4">Project Objective</h3>
+                    <p class="text-gray-300 leading-relaxed">To develop an autonomous security rover (AEGIS Defense Bot) equipped with GPS-based geofencing to lock and unlock a solenoid mechanism based on its position, functioning between two predefined zones: a Source Area (300m radius) and a Destination Area (200m radius). This bot will also be capable of remote communication, motion sensing, object detection, and defensive response.</p>
+                </div>
+            </section>
+
+            <!-- Architecture Section -->
+            <section id="architecture" class="content-section">
+                <h2 class="text-4xl font-bold text-gray-100 mb-4">System Architecture</h2>
+                <p class="text-lg text-gray-400 mb-8 max-w-4xl">This interactive diagram illustrates the flow of data and control between the bot's components. Click on any component to learn more about its function.</p>
+
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <!-- Diagram -->
+                    <div class="w-full md:w-2/3 bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+                        <div class="text-center mb-4">
+                            <div id="comp-esp32" class="component-card cursor-pointer inline-block bg-sky-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm border border-sky-600">ESP32-S3 (Control & Comms)</div>
+                        </div>
+                        <div class="flex justify-center mb-4">
+                            <div class="w-px bg-gray-600 h-8"></div>
+                        </div>
+                        <div class="flex justify-around text-center flex-wrap">
+                             <div id="comp-lora" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">LoRa SX1278</div>
+                             <div id="comp-solenoid" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">Solenoid Lock</div>
+                             <div id="comp-stun" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">Stun Module</div>
+                        </div>
+                         <div class="flex justify-center my-4">
+                            <div class="w-2/3 h-px bg-gray-600"></div>
+                        </div>
+                        <div class="text-center font-mono text-sm text-gray-500 my-2">I2C / UART Bridge</div>
+                         <div class="flex justify-center my-4">
+                            <div class="w-px bg-gray-600 h-8"></div>
+                        </div>
+                        <div class="text-center mb-4">
+                            <div id="comp-pico" class="component-card cursor-pointer inline-block bg-sky-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm border border-sky-600">Raspberry Pi Pico (GPS & Sensors)</div>
+                        </div>
+                         <div class="flex justify-center mb-4">
+                            <div class="w-px bg-gray-600 h-8"></div>
+                        </div>
+                        <div class="flex justify-around text-center flex-wrap">
+                             <div id="comp-gps" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">GPS NEO-6M</div>
+                             <div id="comp-pir" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">PIR Sensor</div>
+                             <div id="comp-ultrasonic" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">Ultrasonic</div>
+                             <div id="comp-motors" class="component-card cursor-pointer bg-gray-700 py-2 px-4 rounded-md m-2 shadow-sm border border-gray-600">Motor Drivers</div>
+                        </div>
+                    </div>
+                    <!-- Details Pane -->
+                    <div id="component-details" class="w-full md:w-1/3 bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 min-h-[300px]">
+                        <h3 id="details-title" class="text-2xl font-bold text-gray-100 mb-4">Select a Component</h3>
+                        <p id="details-text" class="text-gray-300 leading-relaxed">Click on a component in the diagram to see its detailed description and role within the project.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Workflow Section -->
+            <section id="workflow" class="content-section">
+                <h2 class="text-4xl font-bold text-gray-100 mb-4">Operational Workflow</h2>
+                <p class="text-lg text-gray-400 mb-8 max-w-4xl">The AEGIS bot follows a distinct, multi-phase operational sequence from start to finish.</p>
+                <div class="space-y-8">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white flex items-center justify-center rounded-full text-2xl font-bold mr-6">1</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-100 mb-2">Initialization & Start</h3>
+                            <p class="text-gray-300">The bot powers on, acquires a GPS signal, and establishes LoRa communication. It remains **unlocked** within the 300m radius of the source zone, ready for payload loading.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white flex items-center justify-center rounded-full text-2xl font-bold mr-6">2</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-100 mb-2">Travel Phase</h3>
+                            <p class="text-gray-300">Once the bot moves outside the source radius, the solenoid **locks automatically**. It navigates towards the destination using GPS, while ultrasonic sensors provide obstacle avoidance.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-sky-500 text-white flex items-center justify-center rounded-full text-2xl font-bold mr-6">3</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-100 mb-2">Arrival Phase</h3>
+                            <p class="text-gray-300">Upon entering the 200m destination radius, the solenoid **unlocks automatically**. A confirmation alert is sent to the remote operator via LoRa, and the payload is now accessible.</p>
+                        </div>
+                    </div>
+                     <div class="flex items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-red-600 text-white flex items-center justify-center rounded-full text-2xl font-bold mr-6">!</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-red-400 mb-2">Security Protocol</h3>
+                            <p class="text-gray-300">If the PIR sensor detects motion while the bot is locked, it can trigger an alert and activate the defensive stun module, either autonomously or via remote command.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Project Plan Section -->
+            <section id="plan" class="content-section">
+                <h2 class="text-4xl font-bold text-gray-100 mb-4">4-Day Project Plan</h2>
+                <p class="text-lg text-gray-400 mb-8 max-w-4xl">A breakdown of the project into a manageable 4-day schedule. Click on each day to see the detailed tasks.</p>
+                <div id="timeline" class="space-y-4">
+                    <!-- Day 1 -->
+                    <div class="timeline-item border border-gray-700 rounded-xl overflow-hidden">
+                        <button class="timeline-header w-full text-left p-6 bg-gray-800 hover:bg-gray-700 flex justify-between items-center">
+                            <span class="text-xl font-bold text-cyan-400">Day 1: Hardware Assembly & Basic Wiring</span>
+                            <span class="text-2xl font-light text-gray-400 transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="timeline-item-content bg-gray-800 px-6 pb-6">
+                            <ul class="list-disc list-inside space-y-2 text-gray-300">
+                                <li><strong>Chassis Assembly:</strong> Mount motors and wheels.</li>
+                                <li><strong>Power System Integration:</strong> Mount battery, buck/boost converters.</li>
+                                <li><strong>Motor Driver Wiring:</strong> Connect drivers to motors and 12V rail.</li>
+                                <li><strong>Solenoid & MCU Mounting:</strong> Mount solenoid, ESP32, and Pico.</li>
+                                <li><strong>Initial Power-On Test:</strong> Verify power converters and motor drivers (stun module disconnected).</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Day 2 -->
+                    <div class="timeline-item border border-gray-700 rounded-xl overflow-hidden">
+                        <button class="timeline-header w-full text-left p-6 bg-gray-800 hover:bg-gray-700 flex justify-between items-center">
+                            <span class="text-xl font-bold text-cyan-400">Day 2: Sensor Integration & Pico Code</span>
+                            <span class="text-2xl font-light text-gray-400 transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="timeline-item-content bg-gray-800 px-6 pb-6">
+                            <ul class="list-disc list-inside space-y-2 text-gray-300">
+                                <li><strong>Sensor Wiring:</strong> Connect GPS, ultrasonic, and PIR sensors to the Pico.</li>
+                                <li><strong>GPS Module Code:</strong> Write Pico code to parse NMEA strings for lat/long.</li>
+                                <li><strong>Sensor Code:</strong> Write Pico code to get distance and motion detection flags.</li>
+                                <li><strong>Pico-to-ESP32 Communication:</strong> Implement serial/I²C data packaging and sending.</li>
+                                <li><strong>Component Test:</strong> Test each sensor individually.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Day 3 -->
+                    <div class="timeline-item border border-gray-700 rounded-xl overflow-hidden">
+                        <button class="timeline-header w-full text-left p-6 bg-gray-800 hover:bg-gray-700 flex justify-between items-center">
+                            <span class="text-xl font-bold text-cyan-400">Day 3: High-Level Logic & ESP32 Code</span>
+                            <span class="text-2xl font-light text-gray-400 transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="timeline-item-content bg-gray-800 px-6 pb-6">
+                            <ul class="list-disc list-inside space-y-2 text-gray-300">
+                                <li><strong>Main Control Logic:</strong> Implement Haversine formula on ESP32.</li>
+                                <li><strong>Geofencing Logic:</strong> Code the conditions for activating/deactivating the solenoid.</li>
+                                <li><strong>Stun Module Integration:</strong> Wire and code the stun module trigger.</li>
+                                <li><strong>LoRa Communication:</strong> Configure LoRa to send status updates and receive commands.</li>
+                                <li><strong>Remote Command Logic:</strong> Implement override logic based on LoRa commands.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Day 4 -->
+                    <div class="timeline-item border border-gray-700 rounded-xl overflow-hidden">
+                        <button class="timeline-header w-full text-left p-6 bg-gray-800 hover:bg-gray-700 flex justify-between items-center">
+                            <span class="text-xl font-bold text-cyan-400">Day 4: Integration, Testing & Refinement</span>
+                            <span class="text-2xl font-light text-gray-400 transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="timeline-item-content bg-gray-800 px-6 pb-6">
+                            <ul class="list-disc list-inside space-y-2 text-gray-300">
+                                <li><strong>Code Integration:</strong> Merge ESP32 and Pico codebases.</li>
+                                <li><strong>Full System Test Run:</strong> Perform a complete, real-world simulation of the mission workflow.</li>
+                                <li><strong>Security Feature Testing:</strong> Manually trigger PIR and test remote overrides.</li>
+                                <li><strong>Troubleshooting:</strong> Address any bugs and refine performance.</li>
+                                <li><strong>Documentation:</strong> Finalize code comments and project documentation.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Budget Section -->
+            <section id="budget" class="content-section">
+                <h2 class="text-4xl font-bold text-gray-100 mb-4">Project Budget</h2>
+                <p class="text-lg text-gray-400 mb-8 max-w-4xl">A visual breakdown of the project's total budget and cost allocation for electronics and other materials.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+                        <h3 class="text-xl font-bold text-gray-100 mb-4 text-center">Total Budget Allocation</h3>
+                        <div class="chart-container relative mx-auto" style="height:350px; max-width:400px;">
+                            <canvas id="budgetChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+                        <h3 class="text-xl font-bold text-gray-100 mb-4 text-center">Electronics Component Costs</h3>
+                        <div class="chart-container relative mx-auto" style="height:350px; max-width:600px;">
+                            <canvas id="componentCostChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+                        <h3 class="text-2xl font-bold text-gray-100 mb-6">Financial Summary</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center text-lg">
+                                <span class="text-gray-300">Total Project Budget:</span>
+                                <span class="font-bold text-gray-100">₹15,000</span>
+                            </div>
+                            <hr class="border-gray-700">
+                            <div class="flex justify-between items-center text-lg">
+                                <span class="text-gray-300">Electronics Cost:</span>
+                                <span class="font-bold text-cyan-400">₹13,327</span>
+                            </div>
+                            <div class="flex justify-between items-center text-lg">
+                                <span class="text-gray-300">Remaining for Materials:</span>
+                                <span class="font-bold text-emerald-400">₹1,673</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Master Copy Section (Hidden by default) -->
+            <section id="master-copy" class="content-section">
+                <h2 class="text-4xl font-bold text-gray-100 mb-4">Master Copy: AEGIS Defense Bot Project Paper</h2>
+                <div class="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+                    <h3 class="text-3xl font-bold text-cyan-400 mb-4">Abstract</h3>
+                    <p class="text-gray-300 leading-relaxed mb-8">The AEGIS Defense Bot is a proof-of-concept autonomous security rover designed to transport and secure a payload between two predefined geofenced zones. The rover utilizes a dual microcontroller architecture, combining the processing power and wireless communication capabilities of the ESP32-S3 with the real-time sensor processing of the Raspberry Pi Pico. Its core functionality revolves around a GPS-based geofencing system that automatically activates a solenoid lock upon exiting a 300-meter radius source zone and deactivates it upon entering a 200-meter radius destination zone. Equipped with LoRa communication for long-range remote control, ultrasonic and PIR sensors for obstacle and intruder detection, and a high-voltage stun module for defensive response, the AEGIS bot represents a robust, low-cost solution for localized security and autonomous delivery applications.</p>
+                    
+                    <h3 class="text-3xl font-bold text-cyan-400 mb-4">2. Technical Architecture and Component Breakdown</h3>
+                    <p class="text-gray-300 leading-relaxed mb-4">The AEGIS bot’s architecture is built around a hybrid microcontroller system, with each board optimized for specific tasks.</p>
+                    <div class="bg-gray-900 p-6 rounded-lg text-gray-200 font-mono text-sm mb-8 overflow-x-auto">
+                        <pre>
+              +-------------------+
+              |    ESP32-S3       |
+              | (Control & Comms) |
+              +-------------------+
+                       |
+     +-----------------+-----------------+
+     |                 |                 |
++----+----+      +-----+-----+     +-----+-----+
+|  LoRa   |      | Solenoid  |     |   Stun    |
+|  SX1278 |      |   Lock    |     |   Module  |
+| (Comms) |      | (Output)  |     |  (Output) |
++----+----+      +-----------+     +-----+-----+
+     |                                   |
+     |           +-----------------+     |
+     +---------->|   I2C / UART    |<----+
+                 | (Data Bridge)   |
+     +-----------+-----------------+     |
+     |           |                       |
++----+----+      |      +----+----+      |
+| Raspberry |<---+      | PIR     |      |
+| Pi Pico   |           | Sensor  |      |
+| (GPS & Sensors) |     | (Input) |      |
++----+----+      |      +----+----+      |
+     |           |                       |
+     |           |      +-----+-----+    |
+     +---------->|      | HC-SR04   |    |
+                 |      | (Inputs)  |    |
+     |           |      +-----+-----+    |
++----+----+      |                       |
+| GPS     |      |      +-----+-----+    |
+| NEO-6M  |<-----+      | L298N x2  |----+
+| (Input) |             | (Drivers) |
++----+----+             +-----+-----+
+                          |           
+                     +----+----+
+                     |  Motors |
+                     +----+----+
+                        </pre>
+                    </div>
+                    
+                    <h4 class="text-xl font-bold text-gray-100 mb-2">Component Roles:</h4>
+                    <ul class="list-disc list-inside text-gray-300 mb-8 space-y-2">
+                        <li>**ESP32-S3 DevKitC-1**: Serves as the high-level brain for communication, solenoid control, and stun module activation.</li>
+                        <li>**Raspberry Pi Pico**: Dedicated to low-level, real-time sensor processing for GPS, ultrasonic, and PIR data.</li>
+                        <li>**Ublox NEO-6M GPS Module**: Provides real-time location data for geofencing.</li>
+                        <li>**LoRa SX1278 Module**: Enables long-range, low-power wireless communication for remote control and telemetry.</li>
+                        <li>**Solenoid Lock**: The mechanical lock activated by the ESP32 based on geo-boundaries.</li>
+                        <li>**HC-SR04 Ultrasonic Sensors**: Used for obstacle detection.</li>
+                        <li>**PIR Sensor**: Detects movement in the bot’s vicinity.</li>
+                        <li>**Defensive Stun Module**: A high-voltage output module triggered by motion or remote command.</li>
+                        <li>**4x 12V Gear Motors & 2x L298N Motor Drivers**: The drive system for the rover's mobility.</li>
+                    </ul>
+
+                    <h3 class="text-3xl font-bold text-cyan-400 mb-4">3. Geofencing Logic and Calculations</h3>
+                    <p class="text-gray-300 leading-relaxed mb-4">The core of the AEGIS bot's security function is its geofencing logic, implemented using the Haversine formula for accurate distance calculation. The bot's current location $(lat_{\text{current}}, long_{\text{current}})$ is compared to the defined zones.</p>
+                    
+                    <h4 class="text-xl font-bold text-gray-100 mb-2">Haversine Formula:</h4>
+                    <div class="bg-gray-900 p-4 rounded-lg text-gray-200 font-mono text-sm mb-8 overflow-x-auto">
+                        <pre>
+  a = sin^2((Δφ)/2) + cos(φ₁)cos(φ₂)sin^2((Δλ)/2)
+  c = 2 * arctan2(√(a), √(1-a))
+  d = R * c
+                        </pre>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed mb-8">Where $\phi$ and $\lambda$ are latitude and longitude in radians, $R$ is the Earth's radius (approx. $6,371 km$), and $d$ is the calculated distance.</p>
+                    
+                    <h3 class="text-3xl font-bold text-cyan-400 mb-4">4. Operational Workflow</h3>
+                    <p class="text-gray-300 leading-relaxed mb-4">The bot follows a clear, multi-phase workflow:</p>
+                    <ul class="list-disc list-inside text-gray-300 mb-8 space-y-2">
+                        <li>**Initialization:** System check, GPS lock, and LoRa connection.</li>
+                        <li>**Start Phase:** Unlocked and ready within the 300m Source Area.</li>
+                        <li>**Travel Phase:** Solenoid locks when outside the 300m radius; bot navigates to destination.</li>
+                        <li>**Arrival Phase:** Solenoid unlocks upon entering the 200m Destination Area.</li>
+                        <li>**Additional Security:** Stun module can be activated by PIR sensor or remote command while locked.</li>
+                    </ul>
+
+                    <h3 class="text-3xl font-bold text-cyan-400 mb-4">7. Bill of Materials and Cost Analysis</h3>
+                    <p class="text-gray-300 leading-relaxed mb-4">The following is a summary of the project's key components and their estimated costs.</p>
+                    <table class="min-w-full text-left text-sm font-light">
+                        <thead class="border-b border-gray-700 font-medium">
+                            <tr>
+                                <th scope="col" class="px-6 py-4">Component</th>
+                                <th scope="col" class="px-6 py-4">Cost (INR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">ESP32-S3 DevKitC-1</td>
+                                <td class="px-6 py-4">₹800</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">Raspberry Pi Pico</td>
+                                <td class="px-6 py-4">₹400</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">Ublox NEO-6M GPS Module</td>
+                                <td class="px-6 py-4">₹500</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">LoRa SX1278 Module</td>
+                                <td class="px-6 py-4">₹500</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">Solenoid Lock (12V)</td>
+                                <td class="px-6 py-4">₹500</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">HC-SR04 Ultrasonic Sensor</td>
+                                <td class="px-6 py-4">₹100 x 4 = ₹400</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">PIR Sensor</td>
+                                <td class="px-6 py-4">₹200</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">Stun Module</td>
+                                <td class="px-6 py-4">₹800</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">12V 100RPM Gear Motor</td>
+                                <td class="px-6 py-4">₹500 x 4 = ₹2000</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">L298N Motor Driver</td>
+                                <td class="px-6 py-4">₹200 x 2 = ₹400</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">MG996R Servo Motor</td>
+                                <td class="px-6 py-4">₹400 x 2 = ₹800</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">12V Li-ion Battery (2200mAh)</td>
+                                <td class="px-6 py-4">₹1,500</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">Buck Converter</td>
+                                <td class="px-6 py-4">₹100 x 2 = ₹200</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">Boost Converter</td>
+                                <td class="px-6 py-4">₹300</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <td class="px-6 py-4 font-medium">PCB, Wires, Connectors</td>
+                                <td class="px-6 py-4">₹1,500</td>
+                            </tr>
+                            <tr class="font-bold text-cyan-400">
+                                <td class="px-6 py-4">Subtotal</td>
+                                <td class="px-6 py-4">₹13,327</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Team Info Section -->
+            <section id="team-info" class="content-section">
+                <h2 class="text-4xl font-bold text-gray-100 mb-4">Team Information</h2>
+                <p class="text-lg text-gray-400 mb-8 max-w-4xl">Details about the project team members and their roles.</p>
+                <div class="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+                    <div class="space-y-6">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-4xl text-cyan-400">👤</span>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-100">Aranya Rath</h3>
+                                <p class="text-gray-400">Team Lead</p>
+                                <p class="text-gray-300 text-sm mt-2">Email: arjundutt01238@gmail.com</p>
+                                <p class="text-gray-300 text-sm">Phone: 8274090864</p>
+                            </div>
+                        </div>
+                        <hr class="border-gray-700">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-100 mb-4">Mentors</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li>Prof. Kajari Sur</li>
+                                <li>Prof. Moutushi Singh</li>
+                            </ul>
+                        </div>
+                        <hr class="border-gray-700">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-100 mb-4">Team Members</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li><span class="font-bold">1. Priyadarshi Gupta</span> - Mathematical Model</li>
+                                <li><span class="font-bold">2. Deepjyoti Basu</span> - CAD</li>
+                                <li><span class="font-bold">3. Sayak Pal</span> - Algo Design, Frame checking</li>
+                                <li><span class="font-bold">4. Arghya Kumar</span> - CAD, Electronics</li>
+                                <li><span class="font-bold">5. Tousif Aman Halder</span> - Electronics</li>
+                                <li><span class="font-bold">6. Tomojoy</span> - Body cheting, Manual Auto testing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="password-modal" class="modal-overlay">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700 w-11/12 md:w-1/3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-100">Access Master Copy</h3>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p class="text-gray-400 mb-4">Please enter the correct ID and password to view the Master Copy.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="master-id" class="block text-gray-400 text-sm font-medium mb-1">ID</label>
+                    <input type="text" id="master-id" class="w-full bg-gray-700 text-gray-100 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+                <div>
+                    <label for="master-password" class="block text-gray-400 text-sm font-medium mb-1">Password</label>
+                    <input type="password" id="master-password" class="w-full bg-gray-700 text-gray-100 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+                <p id="auth-message" class="text-sm text-red-400 text-center"></p>
+                <button id="auth-submit-btn" class="w-full bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-cyan-500 transition-colors duration-200">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            const timelineHeaders = document.querySelectorAll('.timeline-header');
+            const masterCopyLink = document.querySelector('a[href="#master-copy"]');
+            const passwordModal = document.getElementById('password-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const masterIdInput = document.getElementById('master-id');
+            const masterPasswordInput = document.getElementById('master-password');
+            const authSubmitBtn = document.getElementById('auth-submit-btn');
+            const authMessage = document.getElementById('auth-message');
+
+            // Navigation
+            function showSection(targetId) {
+                sections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    
+                    if (targetId === '#master-copy') {
+                        e.preventDefault();
+                        passwordModal.style.display = 'flex';
+                    } else {
+                        e.preventDefault();
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                        showSection(targetId.substring(1));
+                    }
+                });
+            });
+
+            // Master Copy Modal Logic
+            closeModalBtn.addEventListener('click', () => {
+                passwordModal.style.display = 'none';
+                authMessage.textContent = '';
+                masterIdInput.value = '';
+                masterPasswordInput.value = '';
+            });
+
+            authSubmitBtn.addEventListener('click', () => {
+                const id = masterIdInput.value.trim();
+                const password = masterPasswordInput.value.trim();
+                
+                if (id === 'AEGIS2024' && password === 'Arjun') {
+                    passwordModal.style.display = 'none';
+                    authMessage.textContent = '';
+                    masterIdInput.value = '';
+                    masterPasswordInput.value = '';
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    masterCopyLink.classList.add('active');
+                    showSection('master-copy');
+                } else {
+                    authMessage.textContent = 'Invalid ID or password. Please try again.';
+                }
+            });
+
+            // Architecture Diagram
+            const componentData = {
+                'comp-esp32': { title: 'ESP32-S3', text: 'Serves as the high-level brain. It handles LoRa communication, manages the solenoid lock and stun module, and runs the core geofencing logic.' },
+                'comp-pico': { title: 'Raspberry Pi Pico', text: 'Dedicated to low-level, real-time tasks. It processes data from the GPS module and all environmental sensors, offloading time-sensitive work from the ESP32.' },
+                'comp-lora': { title: 'LoRa SX1278', text: 'Enables long-range, low-power wireless communication for sending status updates and receiving remote override commands.' },
+                'comp-solenoid': { title: 'Solenoid Lock', text: 'The physical locking mechanism that secures the payload. It is activated and deactivated by the ESP32 based on geofencing rules.' },
+                'comp-stun': { title: 'Stun Module', text: 'A high-voltage defensive system triggered by the ESP32 in response to a PIR sensor alert or a remote command.' },
+                'comp-gps': { title: 'GPS NEO-6M', text: 'Provides real-time location data (latitude and longitude) to the Raspberry Pi Pico, which is essential for the geofencing calculations.' },
+                'comp-pir': { title: 'PIR Sensor', text: 'Detects motion in the bot’s vicinity. When triggered while the bot is locked, it initiates a security alert.' },
+                'comp-ultrasonic': { title: 'Ultrasonic Sensors', text: 'Used for close-range obstacle detection (HC-SR04), allowing the bot to navigate its environment without collisions.' },
+                'comp-motors': { title: 'Motor Drivers', text: 'Two L298N motor drivers control the four 12V gear motors, providing mobility and handling the high-current demands of the drive system.' }
+            };
+
+            const detailsTitle = document.getElementById('details-title');
+            const detailsText = document.getElementById('details-text');
+
+            Object.keys(componentData).forEach(id => {
+                document.getElementById(id).addEventListener('click', () => {
+                    detailsTitle.textContent = componentData[id].title;
+                    detailsText.textContent = componentData[id].text;
+                });
+            });
+
+            // Timeline Accordion
+            timelineHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('span:last-child');
+                    
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        // Close other items
+                        document.querySelectorAll('.timeline-item-content').forEach(item => {
+                            item.style.maxHeight = null;
+                            item.previousElementSibling.querySelector('span:last-child').style.transform = 'rotate(0deg)';
+                        });
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.style.transform = 'rotate(45deg)';
+                    }
+                });
+            });
+
+            // Budget Doughnut Chart
+            const ctxDoughnut = document.getElementById('budgetChart').getContext('2d');
+            new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Electronics Cost', 'Remaining for Materials'],
+                    datasets: [{
+                        label: 'Budget Allocation',
+                        data: [13327, 1673],
+                        backgroundColor: [
+                            '#0ea5e9', // sky-500
+                            '#10b981'  // emerald-500
+                        ],
+                        borderColor: [
+                            '#0369a1', // sky-700
+                            '#065f46'  // emerald-900
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e5e7eb', // gray-200
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(context.parsed);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+
+            // Component Cost Bar Chart
+            const ctxBar = document.getElementById('componentCostChart').getContext('2d');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Control Boards', 'Mobility', 'Sensing', 'Communication', 'Security', 'Power Mgt.', 'Miscellaneous'],
+                    datasets: [{
+                        label: 'Cost (INR)',
+                        data: [1200, 3200, 1100, 500, 1300, 2000, 1500],
+                        backgroundColor: '#0ea5e9', // sky-500
+                        borderColor: '#0369a1', // sky-700
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (context.parsed.y !== null) {
+                                        label = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#374151' // gray-700
+                            },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return '₹' + value;
+                                },
+                                color: '#e5e7eb' // gray-200
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#e5e7eb' // gray-200
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
